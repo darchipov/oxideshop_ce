@@ -3529,7 +3529,7 @@ trait AcceptanceTesterActions
         return $this->getScenario()->runStep(new \Codeception\Step\Action('translate', func_get_args()));
     }
 
- 
+
     /**
      * [!] Method is generated. Documentation taken from corresponding module.
      *
