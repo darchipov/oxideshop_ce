@@ -31,7 +31,7 @@ class ProductInfoFrontendTest extends FrontendTestCase
 
     /**
      * Product details. test for checking main product details as info, prices, buying etc
-     *
+     *TODO
      * @group product
      */
     public function testFrontendDetailsNavigationAndInfo()
@@ -88,7 +88,7 @@ class ProductInfoFrontendTest extends FrontendTestCase
 
     /**
      * Product details. test for checking main product details as info, prices, buying etc
-     *
+     *TODO
      * @group product
      */
     public function testFrontendDetailsAdditionalInfo()
