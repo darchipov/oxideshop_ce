@@ -23,6 +23,15 @@ namespace OxidEsales\DoctrineMigrationWrapper;
 
 $facts = new \OxidEsales\Facts\Facts();
 
+if ($facts->isEnterprise()) {
+    $dumpPath = $facts->getEnterpriseEditionRootPath().'/Tests/Codeception/tests/_data/dump.sql';
+} else {
+    $dumpPath = 'tests/_data/dump.sql';
+}
+
+$selenium_server_port = getenv('SELENIUM_SERVER_PORT');
+$selenium_server_port = ($selenium_server_port) ? $selenium_server_port : '4444';
+
 return [
     'SHOP_URL' => $facts->getShopUrl(),
     'SHOP_SOURCE_PATH' => $facts->getSourcePath(),
@@ -32,4 +41,6 @@ return [
     'DB_PASSWORD' => $facts->getDatabasePassword(),
     'DB_HOST' => $facts->getDatabaseHost(),
     'DB_PORT' => $facts->getDatabasePort(),
+    'DUMP_PATH' => $dumpPath,
+    'SELENIUM_SERVER_PORT' => $selenium_server_port,
 ];

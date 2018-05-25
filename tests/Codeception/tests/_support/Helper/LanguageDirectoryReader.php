@@ -53,7 +53,7 @@ class LanguageDirectoryReader extends ArrayLoader
     protected function loadDirectory($messages, $directory)
     {
         $finder = new Finder();
-        $finder->files()->in($directory);
+        $finder->files()->in($directory)->name('*lang.php');
 
         foreach ($finder as $file) {
             $lang = $this->loadFile($file);
