@@ -1,7 +1,6 @@
 <?php
 
 namespace Helper;
-use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Translator as SymfonyTranslator;
 
 class Translator
@@ -13,18 +12,22 @@ class Translator
 
     /**
      * Constructor.
+     *
+     * @param array $paths
      */
-    public function __construct()
+    public function __construct($paths)
     {
         $this->sfTranslator = new SymfonyTranslator('en');
 
-        $this->sfTranslator->addLoader('array', new ArrayLoader());
+        $this->sfTranslator->addLoader('oxphp', new LanguageDirectoryReader());
 
-        $deLanguageArray = $this->_getLanguageArray('de');
-        $this->sfTranslator->addResource('array', $deLanguageArray, 'de');
-        $enLanguageArray = $this->_getLanguageArray('en');
-        $this->sfTranslator->addResource('array', $enLanguageArray, 'en');
+        $languageDir = $this->getLanguageDirectories($paths, 'de');
 
+        $this->sfTranslator->addResource('oxphp', $languageDir, 'de');
+
+        $languageDir = $this->getLanguageDirectories($paths, 'en');
+
+        $this->sfTranslator->addResource('oxphp', $languageDir, 'en');
     }
     /**
      * @param string $string
@@ -39,44 +42,20 @@ class Translator
     /**
      * Returns language map array
      *
+     * @param array  $paths
      * @param string $language Language index
      *
      * @return array
      */
-    private function _getLanguageArray($language)
+    private function getLanguageDirectories($paths, $language)
     {
-        $languageArray = [];
+        $languageDirectories = [];
 
-        $languageFiles = $this->_getLanguageFiles($language);
-
-        foreach ($languageFiles as $languageFile) {
-            $aLang = [];
-            if (file_exists($languageFile) && is_readable($languageFile)) {
-                include $languageFile;
-            }
-            $languageArray = array_merge($languageArray, $aLang);
+        foreach ($paths as $path) {
+            $languageDirectories[] = $path . $language;
         }
 
-        return $languageArray;
-    }
-
-
-    /**
-     * Returns language map array
-     *
-     * @param string $language Language index
-     *
-     * @return array
-     */
-    private function _getLanguageFiles($language)
-    {
-        $languageFiles = [];
-
-        $languageFiles[] = '/var/www/oxideshop/source/Application/translations/' . $language . '/lang.php';
-        $languageFiles[] = '/var/www/oxideshop/source/Application/views/flow/' . $language . '/lang.php';
-        $languageFiles[] = '/var/www/oxideshop/source/Application/views/flow/' . $language . '/cust_lang.php';
-
-        return $languageFiles;
+        return $languageDirectories;
     }
 
 }

@@ -25,6 +25,8 @@ $facts = new \OxidEsales\Facts\Facts();
 
 return [
     'SHOP_URL' => $facts->getShopUrl(),
+    'SHOP_SOURCE_PATH' => $facts->getSourcePath(),
+    'VENDOR_PATH' => $facts->getVendorPath(),
     'DB_NAME' => $facts->getDatabaseName(),
     'DB_USERNAME' => $facts->getDatabaseUserName(),
     'DB_PASSWORD' => $facts->getDatabasePassword(),

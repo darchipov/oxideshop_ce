@@ -9,16 +9,20 @@ modules:
     enabled:
         - Asserts
         - WebDriver:
-            url: http://www.oxideshop.local
+            url: '%SHOP_URL%'
             browser: firefox
             window_size: 1920x1080
             clear_cookies: true
         - \Helper\Acceptance
+        - \Helper\TranslationsModule:
+            shop_path: '%SHOP_SOURCE_PATH%'
+            paths: 'Application/views/flow'
         - Db:
             dsn: 'mysql:host=%DB_HOST%;dbname=%DB_NAME%;charset=utf8'
             user: '%DB_USERNAME%'
             password: '%DB_PASSWORD%'
+            port: '%DB_PORT%'
             dump: 'tests/_data/dump.sql'
             populate: true # run populator before all tests
             cleanup: false # run populator before each test
-            populator: '../../vendor/bin/reset-shop && mysql -u $user -h $host $dbname < $dump'
+            populator: '%VENDOR_PATH%/bin/reset-shop && mysql -u $user -h $host $dbname < $dump'

@@ -6,28 +6,6 @@ namespace Helper;
 
 class Acceptance extends \Codeception\Module
 {
-    /**
-     * @var Translator
-     */
-    private $translator;
-
-    public function _initialize()
-    {
-        parent::_initialize();
-
-        $this->translator = new Translator();
-    }
-
-    /**
-     * @param string $string
-     *
-     * @return string
-     */
-    public function translate($string)
-    {
-        return $this->translator->translate($string);
-    }
-
     public function clearShopCache()
     {
         $this->getModule('WebDriver')->_restart();
