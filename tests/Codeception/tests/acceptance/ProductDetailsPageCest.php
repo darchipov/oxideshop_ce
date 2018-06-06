@@ -176,4 +176,43 @@ class ProductDetailsPageCest
         $I->clearShopCache();
     }
 
+    /**
+     * @param AcceptanceTester  $I
+     * @param ProductNavigation $productNavigation
+     */
+    public function productAccessories(AcceptanceTester $I, ProductNavigation $productNavigation)
+    {
+        $I->wantToTest('Product\'s accessories');
+
+        $data = [
+            'OXID' => 'e2647c561ffb990a8.18051802',
+            'OXOBJECTID' => '1002',
+            'OXARTICLENID' => '1000',
+        ];
+        $I->haveInDatabase('oxaccessoire2article', $data);
+
+        $productData = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'desc' => 'Test product 0 short desc [EN] šÄßüл',
+            'price' => '50,00 € *'
+        ];
+
+        $accessoryData = [
+            'id' => 1002,
+            'title' => 'Test product 2 [EN] šÄßüл',
+            'desc' => 'Test product 2 short desc [EN] šÄßüл',
+            'price' => 'from 55,00 €'
+        ];
+
+        //open details page
+        $detailsPage = $productNavigation->openProductDetailsPage($productData['id']);
+        $I->see($productData['title']);
+
+        $I->see($I->translate('ACCESSORIES'));
+        $detailsPage->seeAccessoryData($accessoryData, 1);
+        $accessoryDetailsPage = $detailsPage->openAccessoryDetailsPage(1);
+        $accessoryDetailsPage->seeProductData($accessoryData);
+    }
+
 }

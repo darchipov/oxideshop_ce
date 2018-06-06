@@ -53,6 +53,10 @@ class ProductDetails extends Page
 
     public static $priceAlertSuggestedPrice = 'pa[price]';
 
+    public static $accessoriesProductTitle = '#accessories_%s';
+
+    public static $accessoriesProductPrice = '//form[@name="tobasketaccessories_%s"]/div/div[@class="price text-center"]';
+
     /**
      * Basic route example for your current URL
      * You can append any additional parameter to URL
@@ -279,4 +283,31 @@ class ProductDetails extends Page
         $I->click(self::$toBasketButton);
         return $this;
     }
+
+    /**
+     * @param array $productData
+     * @param int   $position
+     *
+     * @return $this
+     */
+    public function seeAccessoryData($productData, $position = 1)
+    {
+        $I = $this->user;
+        $I->see($productData['title'], sprintf(self::$accessoriesProductTitle, $position));
+        $I->see($productData['price'], sprintf(self::$accessoriesProductPrice, $position));
+        return $this;
+    }
+
+    /**
+     * @param int   $position
+     *
+     * @return $this
+     */
+    public function openAccessoryDetailsPage($position = 1)
+    {
+        $I = $this->user;
+        $I->click(sprintf(self::$accessoriesProductTitle, $position));
+        return $this;
+    }
+
 }
