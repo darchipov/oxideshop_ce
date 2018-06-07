@@ -8,7 +8,7 @@ use Step\Acceptance\UserRegistrationInCheckout;
 class UserRegistrationCest
 {
     /**
-     * @group main
+     * @group main, registration
      *
      * @param AcceptanceTester $I
      * @param UserRegistration $userRegistration

@@ -4,6 +4,11 @@ use Step\Acceptance\ProductNavigation;
 
 class ProductDetailsPageCest
 {
+    /**
+     * @group product
+     *
+     * @param AcceptanceTester $I
+     */
     public function euroSignInTitle(AcceptanceTester $I)
     {
         $I->wantToTest('euro sign in the product title');
@@ -24,6 +29,8 @@ class ProductDetailsPageCest
     }
 
     /**
+     * @group product
+     *
      * @param AcceptanceTester  $I
      * @param ProductNavigation $productNavigation
      */
@@ -67,6 +74,8 @@ class ProductDetailsPageCest
     }
 
     /**
+     * @group product
+     *
      * @param AcceptanceTester  $I
      * @param ProductNavigation $productNavigation
      */
@@ -106,6 +115,8 @@ class ProductDetailsPageCest
     }
 
     /**
+     * @group product
+     *
      * @param AcceptanceTester  $I
      * @param ProductNavigation $productNavigation
      */
@@ -177,6 +188,8 @@ class ProductDetailsPageCest
     }
 
     /**
+     * @group product
+     *
      * @param AcceptanceTester  $I
      * @param ProductNavigation $productNavigation
      */
