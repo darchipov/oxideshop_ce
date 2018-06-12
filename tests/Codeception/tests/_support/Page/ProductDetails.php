@@ -57,6 +57,18 @@ class ProductDetails extends Page
 
     public static $accessoriesProductPrice = '//form[@name="tobasketaccessories_%s"]/div/div[@class="price text-center"]';
 
+    public static $similarProductTitle = '#similar_%s';
+
+    public static $similarProductPrice = '//form[@name="tobasketsimilar_%s"]/div/div[@class="price text-center"]';
+
+    public static $crossSellingProductTitle = '#cross_%s';
+
+    public static $crossSellingProductPrice = '//form[@name="tobasketcross_%s"]/div/div[@class="price text-center"]';
+
+    public static $disabledBasketButton = '//button[@id="toBasket" and @disabled="disabled"]';
+
+    public static $variantSelection = '/descendant::button[@class="btn btn-default btn-sm dropdown-toggle"][%s]';
+
     /**
      * Basic route example for your current URL
      * You can append any additional parameter to URL
@@ -68,30 +80,27 @@ class ProductDetails extends Page
     }
 
     /**
-     * TODO
-     * @return string
+     * Assert if user cannot buy current product
+     *
+     * @return $this
      */
-    public static function getDisabledToBasketButton()
+    public function checkIfProductIsNotBuyable()
     {
-        return '//button[@id="toBasket" and @disabled="disabled"]';
+        $I = $this->user;
+        $I->seeElement(self::$disabledBasketButton);
+        return $this;
     }
 
     /**
-     * TODO
-     * @return string
+     * Assert if user can buy current product
+     *
+     * @return $this
      */
-    public static function getVariantLabel($id)
+    public function checkIfProductIsBuyable()
     {
-        return '.variant-label';
-    }
-
-    /**
-     * TODO
-     * @return string
-     */
-    public static function getVariantSelect($id)
-    {
-        return '/descendant::button[@class="btn btn-default btn-sm dropdown-toggle"]['.$id.']';
+        $I = $this->user;
+        $I->dontSeeElement(self::$disabledBasketButton);
+        return $this;
     }
 
     /**
@@ -104,10 +113,40 @@ class ProductDetails extends Page
     public function selectVariant($variant, $variantValue, $waitForText = null)
     {
         $I = $this->user;
-        $I->click(self::getVariantSelect($variant));
+        $I->click(sprintf(self::$variantSelection, $variant));
         $I->click($variantValue);
         //wait for JS to finish
         $I->waitForJS("return $.active == 0;",10);
+        return $this;
+    }
+
+    /**
+     * @param int    $variant
+     * @param string $variantValue
+     *
+     * @return $this
+     */
+    public function seeVariant($variant, $variantValue)
+    {
+        $I = $this->user;
+        $I->click(sprintf(self::$variantSelection, $variant));
+        $I->see($variantValue);
+        $I->click(sprintf(self::$variantSelection, $variant));
+        return $this;
+    }
+
+    /**
+     * @param int    $variant
+     * @param string $variantValue
+     *
+     * @return $this
+     */
+    public function dontSeeVariant($variant, $variantValue)
+    {
+        $I = $this->user;
+        $I->click(sprintf(self::$variantSelection, $variant));
+        $I->dontSee($variantValue);
+        $I->click(sprintf(self::$variantSelection, $variant));
         return $this;
     }
 
@@ -247,10 +286,41 @@ class ProductDetails extends Page
     public function sendPriceAlert($email, $price)
     {
         $I = $this->user;
-        $I->click($I->translate('PRICE_ALERT'));
+        $this->openPriceAlert();
         $I->fillField(self::$priceAlertEmail, $email);
         $I->fillField(self::$priceAlertSuggestedPrice, $price);
         $I->click($I->translate('SEND'));
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function openPriceAlert()
+    {
+        $I = $this->user;
+        $I->click($I->translate('PRICE_ALERT'));
+        $I->see($I->translate('MESSAGE_PRICE_ALARM_PRICE_CHANGE'));
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function openAttributes()
+    {
+        $I = $this->user;
+        $I->click($I->translate('SPECIFICATION'));
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function openDescription()
+    {
+        $I = $this->user;
+        $I->click($I->translate('DESCRIPTION'));
         return $this;
     }
 
@@ -307,6 +377,58 @@ class ProductDetails extends Page
     {
         $I = $this->user;
         $I->click(sprintf(self::$accessoriesProductTitle, $position));
+        return $this;
+    }
+
+    /**
+     * @param array $productData
+     * @param int   $position
+     *
+     * @return $this
+     */
+    public function seeSimilarProductData($productData, $position = 1)
+    {
+        $I = $this->user;
+        $I->see($productData['title'], sprintf(self::$similarProductTitle, $position));
+        $I->see($productData['price'], sprintf(self::$similarProductPrice, $position));
+        return $this;
+    }
+
+    /**
+     * @param int   $position
+     *
+     * @return $this
+     */
+    public function openSimilarProductDetailsPage($position = 1)
+    {
+        $I = $this->user;
+        $I->click(sprintf(self::$similarProductTitle, $position));
+        return $this;
+    }
+
+    /**
+     * @param array $productData
+     * @param int   $position
+     *
+     * @return $this
+     */
+    public function seeCrossSellingData($productData, $position = 1)
+    {
+        $I = $this->user;
+        $I->see($productData['title'], sprintf(self::$crossSellingProductTitle, $position));
+        $I->see($productData['price'], sprintf(self::$crossSellingProductPrice, $position));
+        return $this;
+    }
+
+    /**
+     * @param int   $position
+     *
+     * @return $this
+     */
+    public function openCrossSellingDetailsPage($position = 1)
+    {
+        $I = $this->user;
+        $I->click(sprintf(self::$crossSellingProductTitle, $position));
         return $this;
     }
 

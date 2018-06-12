@@ -26,7 +26,7 @@ $facts = new \OxidEsales\Facts\Facts();
 if ($facts->isEnterprise()) {
     $dumpPath = $facts->getEnterpriseEditionRootPath().'/Tests/Codeception/tests/_data/dump.sql';
 } else {
-    $dumpPath = 'tests/_data/dump.sql';
+    $dumpPath = $facts->getShopRootPath().'/tests/Codeception/tests/_data/dump.sql';
 }
 
 $selenium_server_port = getenv('SELENIUM_SERVER_PORT');

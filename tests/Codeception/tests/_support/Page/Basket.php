@@ -6,7 +6,18 @@ class Basket extends Page
     // include url of current page
     public static $URL = '';
 
-    public static $basketSummaryField = '#basketGrandTotal';
+    // include bread crumb of current page
+    public static $breadCrumb = '#breadcrumb';
+
+    public static $basketSummary = '#basketGrandTotal';
+
+    public static $basketItemAmount = '#am_%s';
+
+    public static $basketItemTitle = '//tr[@id="table_cartItem_%s"]/td[2]/div[2]/a';
+
+    public static $basketItemId = '//tr[@id="table_cartItem_%s"]/td[2]/div[2]/div[1]';
+
+    public static $basketBundledItemAmount = '//tr[@id="table_cartItem_%s"]/td[4]';
 
     /**
      * Declare UI map for this page here. CSS or XPath allowed.
@@ -24,8 +35,50 @@ class Basket extends Page
         return static::$URL.'/index.php?'.http_build_query($params);
     }
 
-    public static function getBasketProductAmountField($id)
+    /**
+     * Assert basket product
+     *
+     * $basketProducts[] = ['id' => productId,
+     *                   'title' => productTitle,
+     *                   'amount' => productAmount]
+     *
+     * @param array $basketProducts
+     * @param string $basketSummaryPrice
+     *
+     * @return $this
+     */
+    public function seeBasketContains($basketProducts, $basketSummaryPrice)
     {
-        return '#am_'.$id;
+        $I = $this->user;
+        foreach ($basketProducts as $key => $basketProduct) {
+            $itemPosition = $key + 1;
+            $I->see($I->translate('PRODUCT_NO') . ' ' . $basketProduct['id'], sprintf(self::$basketItemId, $itemPosition));
+            $I->see($basketProduct['title'], sprintf(self::$basketItemTitle, $itemPosition));
+            $I->seeInField(sprintf(self::$basketItemAmount, $itemPosition), $basketProduct['amount']);
+        }
+        $I->see($basketSummaryPrice, self::$basketSummary);
+        return $this;
     }
+
+    /**
+     * Assert basket product
+     *
+     * $basketProduct = ['id' => productId,
+     *                   'title' => productTitle,
+     *                   'amount' => productAmount]
+     *
+     * @param array $basketProduct
+     * @param int   $itemPosition
+     *
+     * @return $this
+     */
+    public function seeBasketContainsBundledProduct($basketProduct, $itemPosition)
+    {
+        $I = $this->user;
+        $I->see($I->translate('PRODUCT_NO') . ' ' . $basketProduct['id'], sprintf(self::$basketItemId, $itemPosition));
+        $I->see($basketProduct['title'], sprintf(self::$basketItemTitle, $itemPosition));
+        $I->see($basketProduct['amount'], sprintf(self::$basketBundledItemAmount, $itemPosition));
+        return $this;
+    }
+
 }

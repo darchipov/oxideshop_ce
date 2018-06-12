@@ -12,6 +12,12 @@ class ProductSearchList extends Page
 
     public static $listItemTitle = '#searchList_%s';
 
+    public static $listItemDescription = '//form[@name="tobasketsearchList_%s"]/div[2]/div[2]/div/div[@class="shortdesc"]';
+
+    public static $listItemPrice = '//form[@name="tobasketsearchList_%s"]/div[2]/div[2]/div/div[@class="price"]/div/span[1]';
+
+    public static $variantSelection = '#variantselector_searchList_%s button';
+
     /**
      * Basic route example for your current URL
      * You can append any additional parameter to URL
@@ -23,12 +29,35 @@ class ProductSearchList extends Page
     }
 
     /**
-     * @param int $itemId The position of the item in the list.
+     * @param array $productData
+     * @param int   $itemId      The position of the item in the list.
      *
-     * @return string
+     * @return $this
      */
-    public function getItemTitle($itemId)
+    public function seeProductData($productData, $itemId = 1)
     {
-        return sprintf(self::$listItemTitle, $itemId);
+        $I = $this->user;
+        $I->see($productData['title'], sprintf(self::$listItemTitle, $itemId));
+        $I->see($productData['desc'], sprintf(self::$listItemDescription, $itemId));
+        $I->see($productData['price'], sprintf(self::$listItemPrice, $itemId));
+        return $this;
     }
+
+    /**
+     * @param int    $itemId       The position of the item in the list.
+     * @param string $variantValue
+     * @param string $waitForText
+     *
+     * @return ProductDetails
+     */
+    public function selectVariant($itemId, $variantValue, $waitForText = null)
+    {
+        $I = $this->user;
+        $I->click(sprintf(self::$variantSelection, $itemId));
+        $I->click($variantValue);
+        //wait for JS to finish
+        $I->waitForJS("return $.active == 0;",10);
+        return new ProductDetails($I);
+    }
+
 }

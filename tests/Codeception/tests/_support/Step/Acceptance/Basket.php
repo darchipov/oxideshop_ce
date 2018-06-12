@@ -3,6 +3,7 @@ namespace Step\Acceptance;
 
 use Page\Header\MiniBasket;
 use Page\UserCheckout;
+use Page\Basket as BasketPage;
 
 class Basket extends \AcceptanceTester
 {
@@ -15,29 +16,11 @@ class Basket extends \AcceptanceTester
     }
 
     /**
-     * Assert basket product
-     *
-     * $basketProduct = ['id' => productId,
-     *                   'title' => productTitle,
-     *                   'amount' => productAmount,]
-     *
-     * @param array $basketProduct
-     * @param string $basketSummaryPrice
-     */
-    public function seeBasketContains($basketProduct, $basketSummaryPrice)
-    {
-        $I = $this;
-        $I->see($I->translate('PRODUCT_NO') . ' ' . $basketProduct['id']);
-        $I->see($basketProduct['title']);
-        $I->seeInField(\Page\Basket::getBasketProductAmountField(1), $basketProduct['amount']);
-        $I->see($basketSummaryPrice, \Page\Basket::$basketSummaryField);
-    }
-
-    /**
      * @param $productId
      * @param $amount
      * @param $controller
-     * @return UserCheckout
+     *
+     * @return mixed
      */
     public function addProductToBasket($productId, $amount, $controller)
     {
@@ -49,8 +32,14 @@ class Basket extends \AcceptanceTester
         $params['am'] = $amount;
         $params['anid'] = $productId;
         $I->amOnPage(\Page\Basket::route($params));
-        $breadCrumbName = $I->translate("YOU_ARE_HERE").':'.$I->translate("ADDRESS");
-        $I->see($breadCrumbName, UserCheckout::$breadCrumb);
-        return new UserCheckout($I);
+        if ($controller === 'user') {
+            $breadCrumbName = $I->translate("YOU_ARE_HERE") . ':' . $I->translate("ADDRESS");
+            $I->see($breadCrumbName, UserCheckout::$breadCrumb);
+            return new UserCheckout($I);
+        } else {
+            $breadCrumbName = $I->translate("YOU_ARE_HERE") . ':' . $I->translate("CART");
+            $I->see($breadCrumbName, BasketPage::$breadCrumb);
+            return new BasketPage($I);
+        }
     }
 }
