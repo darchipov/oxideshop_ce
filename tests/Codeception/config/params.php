@@ -23,13 +23,7 @@ namespace OxidEsales\DoctrineMigrationWrapper;
 
 $facts = new \OxidEsales\Facts\Facts();
 
-if ($facts->isEnterprise()) {
-    $dumpPath = $facts->getEnterpriseEditionRootPath().'/Tests/Codeception/tests/_data/dump.sql';
-} else {
-    $shopTestPath = getenv('SHOP_TESTS_PATH');
-    $shopTestPath = ($shopTestPath) ? $shopTestPath : $facts->getShopRootPath().'/tests';
-    $dumpPath = $shopTestPath.'/_data/dump.sql';
-}
+$dumpPath = getTestSuite().'/Codeception/tests/_data/dump.sql';
 
 $selenium_server_port = getenv('SELENIUM_SERVER_PORT');
 $selenium_server_port = ($selenium_server_port) ? $selenium_server_port : '4444';
@@ -46,3 +40,24 @@ return [
     'DUMP_PATH' => $dumpPath,
     'SELENIUM_SERVER_PORT' => $selenium_server_port,
 ];
+
+function getTestSuite()
+{
+    $testSuitePath = getenv('TEST_SUITE');
+    if (!$testSuitePath) {
+        $testSuitePath = getShopTestPath();
+    }
+    return $testSuitePath;
+}
+
+function getShopTestPath()
+{
+    $facts = new \OxidEsales\Facts\Facts();
+
+    if ($facts->isEnterprise()) {
+        $shopTestPath = $facts->getEnterpriseEditionRootPath().'/Tests';
+    } else {
+        $shopTestPath = $facts->getShopRootPath().'/tests';
+    }
+    return $shopTestPath;
+}
