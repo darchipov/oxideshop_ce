@@ -13,6 +13,8 @@ class Basket extends Page
 
     public static $basketItemAmount = '#am_%s';
 
+    public static $basketItemTotalPrice = '//tr[@id="table_cartItem_%s"]/td[@class="totalPrice"]';
+
     public static $basketItemTitle = '//tr[@id="table_cartItem_%s"]/td[2]/div[2]/a';
 
     public static $basketItemId = '//tr[@id="table_cartItem_%s"]/td[2]/div[2]/div[1]';
@@ -40,7 +42,8 @@ class Basket extends Page
      *
      * $basketProducts[] = ['id' => productId,
      *                   'title' => productTitle,
-     *                   'amount' => productAmount]
+     *                   'amount' => productAmount,
+     *                   'totalPrice' => productTotalPrice]
      *
      * @param array $basketProducts
      * @param string $basketSummaryPrice
@@ -54,6 +57,7 @@ class Basket extends Page
             $itemPosition = $key + 1;
             $I->see($I->translate('PRODUCT_NO') . ' ' . $basketProduct['id'], sprintf(self::$basketItemId, $itemPosition));
             $I->see($basketProduct['title'], sprintf(self::$basketItemTitle, $itemPosition));
+            $I->see($basketProduct['totalPrice'], sprintf(self::$basketItemTotalPrice, $itemPosition));
             $I->seeInField(sprintf(self::$basketItemAmount, $itemPosition), $basketProduct['amount']);
         }
         $I->see($basketSummaryPrice, self::$basketSummary);

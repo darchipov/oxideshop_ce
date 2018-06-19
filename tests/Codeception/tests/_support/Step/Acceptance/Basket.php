@@ -7,12 +7,14 @@ use Page\Basket as BasketPage;
 
 class Basket extends \AcceptanceTester
 {
+    use MiniBasket;
 
     public function openBasket()
     {
         $I = $this;
-        $I->click(MiniBasket::$miniBasketMenuElement);
+        $this->openMiniBasket();
         $I->click($I->translate('DISPLAY_BASKET'));
+        return new BasketPage($I);
     }
 
     /**
@@ -31,7 +33,7 @@ class Basket extends \AcceptanceTester
         $params['aid'] = $productId;
         $params['am'] = $amount;
         $params['anid'] = $productId;
-        $I->amOnPage(\Page\Basket::route($params));
+        $I->amOnPage(BasketPage::route($params));
         if ($controller === 'user') {
             $breadCrumbName = $I->translate("YOU_ARE_HERE") . ':' . $I->translate("ADDRESS");
             $I->see($breadCrumbName, UserCheckout::$breadCrumb);

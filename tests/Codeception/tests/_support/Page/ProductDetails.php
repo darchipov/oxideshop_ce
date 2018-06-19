@@ -2,16 +2,25 @@
 namespace Page;
 
 use Page\Account\UserLogin;
+use Page\Footer\ServiceWidget;
 use Page\Header\AccountMenu;
 use Page\Header\LanguageMenu;
 use Page\Header\MiniBasket;
+use Page\Header\Navigation;
 
 class ProductDetails extends Page
 {
-    use AccountMenu, LanguageMenu, MiniBasket;
+    use AccountMenu, LanguageMenu, MiniBasket, Navigation, ServiceWidget;
 
     // include url of current page
     public static $URL = '';
+
+    // include bread crumb of current page
+    public static $breadCrumb = '#breadcrumb';
+
+    public static $nextProductLink = '#linkNextArticle';
+
+    public static $previousProductLink = '#linkPrevArticle';
 
     public static $productTitle = '#productTitle';
 
@@ -19,7 +28,11 @@ class ProductDetails extends Page
 
     public static $productArtNum = '';
 
+    public static $productOldPrice = '.pricebox del';
+
     public static $productPrice = '#productPrice';
+
+    public static $productUnitPrice = '#productPriceUnit';
 
     public static $toBasketButton = '#toBasket';
 
@@ -68,6 +81,18 @@ class ProductDetails extends Page
     public static $disabledBasketButton = '//button[@id="toBasket" and @disabled="disabled"]';
 
     public static $variantSelection = '/descendant::button[@class="btn btn-default btn-sm dropdown-toggle"][%s]';
+
+    public static $amountPriceQuantity = '//div[@class="modal-content"]/div[2]/dl/dt[%s]';
+
+    public static $amountPriceValue = '//div[@class="modal-content"]/div[2]/dl/dd[%s]';
+
+    public static $amountPriceCloseButton = '//div[@class="modal-content"]/div[3]/button';
+
+    public static $selectionList = '#productSelections button';
+
+    public static $attributeName = '#attrTitle_%s';
+
+    public static $attributeValue = '#attrValue_%s';
 
     /**
      * Basic route example for your current URL
@@ -339,6 +364,20 @@ class ProductDetails extends Page
         return $this;
     }
 
+    public function seeProductOldPrice($price)
+    {
+        $I = $this->user;
+        $I->see($price, self::$productOldPrice);
+        return $this;
+    }
+
+    public function seeProductUnitPrice($price)
+    {
+        $I = $this->user;
+        $I->see($price, self::$productUnitPrice);
+        return $this;
+    }
+
     /**
      * Add current product to basket
      *
@@ -432,4 +471,89 @@ class ProductDetails extends Page
         return $this;
     }
 
+    /**
+     * @param array $amountPrices
+     *
+     * @return $this
+     */
+    public function seeAmountPrices($amountPrices)
+    {
+        $I = $this->user;
+        $I->click($I->translate('BLOCK_PRICE'));
+        $I->waitForElementVisible(sprintf(self::$amountPriceQuantity, 1));
+        $itemPosition = 1;
+        foreach ($amountPrices as $key => $discount) {
+            $fromAmount = $I->translate('FROM').' '.$key.' '.$I->translate('PCS');
+            $I->see($fromAmount, sprintf(self::$amountPriceQuantity, $itemPosition));
+            $I->see($discount, sprintf(self::$amountPriceValue, $itemPosition));
+            $itemPosition++;
+        }
+        $I->click(self::$amountPriceCloseButton);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function openNextProduct()
+    {
+        $I = $this->user;
+        $I->click(self::$nextProductLink);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function openPreviousProduct()
+    {
+        $I = $this->user;
+        $I->click(self::$previousProductLink);
+        return $this;
+    }
+
+    /**
+     * @return ProductSearchList
+     */
+    public function openProductSearchList()
+    {
+        $I = $this->user;
+        $I->click($I->translate('BACK_TO_OVERVIEW'));
+        return new ProductSearchList($I);
+    }
+
+    public function selectSelectionListItem($selectionItem)
+    {
+        $I = $this->user;
+        $I->click(self::$selectionList);
+        $I->click($selectionItem);
+        $I->see($selectionItem, self::$selectionList);
+        return $this;
+    }
+
+    /**
+     * @param string $attributeName
+     * @param int    $attributeId
+     *
+     * @return $this
+     */
+    public function seeAttributeName($attributeName, $attributeId)
+    {
+        $I = $this->user;
+        $I->see($attributeName, sprintf(self::$attributeName, $attributeId));
+        return $this;
+    }
+
+    /**
+     * @param string $attributeValue
+     * @param int    $attributeId
+     *
+     * @return $this
+     */
+    public function seeAttributeValue($attributeValue, $attributeId)
+    {
+        $I = $this->user;
+        $I->see($attributeValue, sprintf(self::$attributeValue, $attributeId));
+        return $this;
+    }
 }

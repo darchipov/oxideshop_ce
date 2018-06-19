@@ -14,7 +14,7 @@ class ProductSearchList extends Page
 
     public static $listItemDescription = '//form[@name="tobasketsearchList_%s"]/div[2]/div[2]/div/div[@class="shortdesc"]';
 
-    public static $listItemPrice = '//form[@name="tobasketsearchList_%s"]/div[2]/div[2]/div/div[@class="price"]/div/span[1]';
+    public static $listItemPrice = '//form[@name="tobasketsearchList_%s"]/div[2]/div[2]/div/div[@class="price"]/div/span[@class="lead text-nowrap"]';
 
     public static $variantSelection = '#variantselector_searchList_%s button';
 
@@ -60,4 +60,15 @@ class ProductSearchList extends Page
         return new ProductDetails($I);
     }
 
+    /**
+     * @param $itemId
+     *
+     * @return ProductDetails
+     */
+    public function openProductDetailsPage($itemId)
+    {
+        $I = $this->user;
+        $I->click(sprintf(self::$listItemTitle, $itemId));
+        return new ProductDetails($I);
+    }
 }

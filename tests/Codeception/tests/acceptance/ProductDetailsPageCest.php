@@ -2,6 +2,7 @@
 
 use Step\Acceptance\ProductNavigation;
 use Step\Acceptance\Basket;
+use Step\Acceptance\Start;
 
 class ProductDetailsPageCest
 {
@@ -10,7 +11,7 @@ class ProductDetailsPageCest
      *
      * @param AcceptanceTester $I
      */
-    public function euroSignInTitle(AcceptanceTester $I)
+    public function euroSignInTitle(AcceptanceTester $I, Start $start)
     {
         $I->wantToTest('euro sign in the product title');
 
@@ -24,8 +25,7 @@ class ProductDetailsPageCest
             'price' => '50,00 € *'
         ];
 
-        $searchListPage = $I->openShop()
-            ->searchFor($productData['id'])
+        $searchListPage = $start->searchFor($productData['id'])
             ->switchLanguage('Deutsch');
 
         $searchListPage->seeProductData($productData, 1);
@@ -39,6 +39,95 @@ class ProductDetailsPageCest
     /**
      * @group product
      *
+     * @param AcceptanceTester $I
+     */
+    public function detailsPageNavigation(AcceptanceTester $I, Start $start)
+    {
+        $I->wantToTest('product navigation in details page');
+
+        $productData = [
+            'id' => 1001,
+            'title' => 'Test product 1 [EN] šÄßüл',
+            'desc' => 'Test product 1 short desc [EN] šÄßüл',
+            'price' => '100,00 € *'
+        ];
+
+        $searchListPage = $start->searchFor('100')
+            ->seeProductData($productData, 2);
+        $detailsPage = $searchListPage->openProductDetailsPage(2);
+        $breadCrumb = $I->translate('YOU_ARE_HERE').':'.sprintf($I->translate('SEARCH_RESULT'), '100');
+        $I->see($breadCrumb);
+        $navigationText = $I->translate('PRODUCT').' 2 '.$I->translate('OF').' 4';
+        $I->see($navigationText);
+        $detailsPage = $detailsPage->openNextProduct();
+        $navigationText = $I->translate('PRODUCT').' 3 '.$I->translate('OF').' 4';
+        $I->see($navigationText);
+        $detailsPage = $detailsPage->openPreviousProduct();
+        $navigationText = $I->translate('PRODUCT').' 2 '.$I->translate('OF').' 4';
+        $I->see($navigationText);
+        $searchListPage = $detailsPage->openProductSearchList();
+        $searchListPage->seeProductData($productData, 2);
+        $breadCrumb = $I->translate('YOU_ARE_HERE').':'.$I->translate('SEARCH');
+        $I->see($breadCrumb);
+    }
+
+    /**
+     * @group product
+     *
+     * @param AcceptanceTester $I
+     */
+    public function detailsPageInformation(AcceptanceTester $I, ProductNavigation $productNavigation)
+    {
+        $I->wantToTest('product information in details page');
+
+        $data = [
+            'OXID' => 'testsellist1',
+            'OXTITLE' => 'test selection list [DE] šÄßüл',
+            'OXIDENT' => 'test sellist šÄßüл',
+            'OXVALDESC' => 'selvar1 [DE]!P!1__@@selvar2 [DE]__@@selvar3 [DE]!P!-2__@@selvar4 [DE]!P!2%__@@',
+            'OXTITLE_1' => 'test selection list [EN] šÄßüл',
+            'OXVALDESC_1' => 'selvar1 [EN] šÄßüл!P!1__@@selvar2 [EN] šÄßüл__@@selvar3 [EN] šÄßüл!P!-2__@@selvar4 [EN] šÄßüл!P!2%__@@',
+        ];
+        $I->haveInDatabase('oxselectlist', $data);
+
+        $data = [
+            'OXID' => 'obj2sellist1',
+            'OXOBJECTID' => '1001',
+            'OXSELNID' => 'testsellist1',
+        ];
+        $I->haveInDatabase('oxobject2selectlist', $data);
+
+        $productData = [
+            'id' => 1001,
+            'title' => 'Test product 1 [EN] šÄßüл',
+            'desc' => 'Test product 1 short desc [EN] šÄßüл',
+            'price' => '100,00 € *'
+        ];
+
+        //open details page
+        $detailsPage = $productNavigation->openProductDetailsPage($productData['id'])
+            ->seeProductData($productData)
+            ->seeProductOldPrice('150,00 €');
+        $I->see($I->translate('MESSAGE_NOT_ON_STOCK'));
+        $I->see($I->translate('AVAILABLE_ON') . ' 2030-01-01');
+        $detailsPage->selectSelectionListItem('selvar1 [EN] šÄßüл')
+            ->selectSelectionListItem('selvar2 [EN] šÄßüл')
+            ->selectSelectionListItem('selvar3 [EN] šÄßüл')
+            ->selectSelectionListItem('selvar4 [EN] šÄßüл');
+        $detailsPage->openDescription();
+        $I->see('Test product 1 long description [EN] šÄßüл');
+        $detailsPage->openAttributes()
+            ->seeAttributeName('Test attribute 1 [EN] šÄßüл',1)
+            ->seeAttributeValue('attr value 11 [EN] šÄßüл', 1)
+            ->seeAttributeName('Test attribute 3 [EN] šÄßüл',2)
+            ->seeAttributeValue('attr value 3 [EN] šÄßüл', 2)
+            ->seeAttributeName('Test attribute 2 [EN] šÄßüл',3)
+            ->seeAttributeValue('attr value 12 [EN] šÄßüл', 3);
+    }
+
+    /**
+     * @group product
+     *
      * @param AcceptanceTester  $I
      * @param ProductNavigation $productNavigation
      */
@@ -46,8 +135,7 @@ class ProductDetailsPageCest
     {
         $I->wantTo('send the product suggestion email');
 
-        //(Use gift registry) is disabled
-        $I->updateInDatabase('oxconfig', ["OXVARVALUE" => ''], ["OXVARNAME" => 'iUseGDVersion']);
+        $I->updateConfigInDatabase('iUseGDVersion', '', 'str');
 
         $productData = [
             'id' => 1000,
@@ -77,8 +165,7 @@ class ProductDetailsPageCest
         $suggestionPage->sendSuggestionEmail($suggestionEmailData);
         $I->see($productData['title']);
 
-        //(Use gift registry) is enabled
-        $I->cleanUp();
+        $I->updateConfigInDatabase('iUseGDVersion', '2', 'str');
     }
 
     /**
@@ -91,8 +178,7 @@ class ProductDetailsPageCest
     {
         $I->wantToTest('product price alert functionality');
 
-        //(Use gift registry) is disabled
-        $I->updateInDatabase('oxconfig', ["OXVARVALUE" => ''], ["OXVARNAME" => 'iUseGDVersion']);
+        $I->updateConfigInDatabase('iUseGDVersion', '', 'str');
 
         $productData = [
             'id' => 1000,
@@ -118,8 +204,7 @@ class ProductDetailsPageCest
         $I->see($productData['title']);
         $I->dontSee($I->translate('PRICE_ALERT'));
 
-        //(Use gift registry) is enabled
-        $I->cleanUp();
+        $I->updateConfigInDatabase('iUseGDVersion', '2', 'str');
     }
 
     /**
@@ -190,9 +275,6 @@ class ProductDetailsPageCest
         $detailsPage->addProductToBasket(2)
             ->addProductToBasket(1)
             ->seeMiniBasketContains([$basketItem1, $basketItem2], '366,00 €', 6);
-
-        $I->deleteFromDatabase('oxuserbaskets', ['oxuserid' => 'testuser']);
-        $I->clearShopCache();
     }
 
     /**
@@ -234,7 +316,6 @@ class ProductDetailsPageCest
         $detailsPage->seeAccessoryData($accessoryData, 1);
         $accessoryDetailsPage = $detailsPage->openAccessoryDetailsPage(1);
         $accessoryDetailsPage->seeProductData($accessoryData);
-        $I->deleteFromDatabase('oxaccessoire2article', ['OXID' => 'testaccessories1']);
     }
 
     /**
@@ -311,8 +392,6 @@ class ProductDetailsPageCest
         $detailsPage->seeCrossSellingData($crossSellingProductData, 1);
         $accessoryDetailsPage = $detailsPage->openCrossSellingDetailsPage(1);
         $accessoryDetailsPage->seeProductData($crossSellingProductData);
-
-        $I->deleteFromDatabase('oxobject2article', ['OXID' => 'testcrossselling1']);
     }
 
     /**
@@ -496,9 +575,6 @@ class ProductDetailsPageCest
             'amount' => 2
         ];
         $detailsPage->seeMiniBasketContains([$basketItem], '50,00 €', 2);
-
-        $I->deleteFromDatabase('oxartextends', ["OXID" => '1001411']);
-        $I->deleteFromDatabase('oxobject2attribute', ["OXID" => 'testattributes1']);
     }
 
     /**
@@ -511,7 +587,8 @@ class ProductDetailsPageCest
         $I->wantToTest('multidimensional variants functionality is disabled');
 
         //multidimensional variants off
-        $I->updateInDatabase('oxconfig', ["OXVARVALUE" => ''], ["OXVARNAME" => 'blUseMultidimensionVariants']);
+        $I->updateConfigInDatabase('blUseMultidimensionVariants', '');
+
         $productData = [
             'id' => 10014,
             'title' => '14 EN product šÄßüл',
@@ -556,7 +633,210 @@ class ProductDetailsPageCest
         $I->updateInDatabase('oxarticles', ["OXSTOCK" => 0], ["OXID" => '1001421']);
         $I->updateInDatabase('oxarticles', ["OXSTOCK" => 0], ["OXID" => '1001422']);
         //multidimensional variants on
-        $I->cleanUp();
+        $I->updateConfigInDatabase('blUseMultidimensionVariants', '1');
+    }
+
+    /**
+     * @group product
+     *
+     * @param AcceptanceTester $I
+     */
+    public function productPriceA(AcceptanceTester $I)
+    {
+        $I->wantToTest('product price A');
+
+        $I->updateConfigInDatabase('blOverrideZeroABCPrices', '1');
+
+        $userData = $this->getExistingUserData();
+
+        $data = [
+            'OXID' => 'obj2group1',
+            'OXOBJECTID' => $userData['userId'],
+            'OXGROUPSID' => 'oxidpricea',
+        ];
+        $I->haveInDatabase('oxobject2group', $data);
+
+        $productData1 = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'desc' => 'Test product 0 short desc [EN] šÄßüл',
+            'price' => '50,00 € *'
+        ];
+
+        $productData2 = [
+            'id' => 1001,
+            'title' => 'Test product 1 [EN] šÄßüл',
+            'desc' => 'Test product 1 short desc [EN] šÄßüл',
+            'price' => '100,00 € *'
+        ];
+
+        //option "Use normal article price instead of zero A, B, C price" is ON
+        $productListPage = $I->openShop()->openCategoryPage('Test category 0 [EN] šÄßüл');
+        $productListPage->seeProductData($productData1, 1)
+            ->seeProductData($productData2, 2);
+
+        $productData1 = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'desc' => 'Test product 0 short desc [EN] šÄßüл',
+            'price' => '35,00 € *'
+        ];
+
+        $productListPage->loginUser($userData['userLoginName'], $userData['userPassword'])
+            ->seeProductData($productData1, 1);
+
+        $productDetailsPage = $productListPage->openDetailsPage(1)
+            ->seeProductData($productData1)
+            ->seeProductUnitPrice('17,50 €/kg')
+            ->addProductToBasket(3);
+
+        $productListPage = $productDetailsPage->openCategoryPage('Test category 0 [EN] šÄßüл')
+            ->seeProductData($productData2, 2);
+        $productDetailsPage = $productListPage->openDetailsPage(2)
+            ->seeProductData($productData2)
+            ->addProductToBasket();
+        $basketPage = $productDetailsPage->openBasket();
+
+        $productData1 = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'amount' => 3,
+            'totalPrice' => '105,00 €'
+        ];
+
+        $productData2 = [
+            'id' => 1001,
+            'title' => 'Test product 1 [EN] šÄßüл',
+            'amount' => 1,
+            'totalPrice' => '100,00 €'
+        ];
+
+        $basketPage->seeBasketContains([$productData1, $productData2], '205,00 €');
+
+        $I->updateConfigInDatabase('blOverrideZeroABCPrices', '');
+        $I->clearShopCache();
+    }
+
+    /**
+     * @group product
+     *
+     * @param AcceptanceTester $I
+     */
+    public function productPriceC(AcceptanceTester $I)
+    {
+        $I->wantToTest('product price C and amount price discount added to this price');
+
+        $userData = $this->getExistingUserData();
+
+        $data = [
+            'OXID' => 'obj2group2',
+            'OXOBJECTID' => $userData['userId'],
+            'OXGROUPSID' => 'oxidpricec',
+        ];
+        $I->haveInDatabase('oxobject2group', $data);
+
+        $data = [
+            'OXID' => 'price2article1',
+            'OXARTID' => 1000,
+            'OXADDPERC' => 20,
+            'OXAMOUNT' => 4,
+            'OXAMOUNTTO' => 9999999,
+        ];
+        $I->haveInDatabase('oxprice2article', $data);
+
+        $productData1 = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'desc' => 'Test product 0 short desc [EN] šÄßüл',
+            'price' => '50,00 € *'
+        ];
+
+        $productListPage = $I->openShop()->openCategoryPage('Test category 0 [EN] šÄßüл');
+        $productListPage->seeProductData($productData1, 1);
+
+        $productData1 = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'desc' => 'Test product 0 short desc [EN] šÄßüл',
+            'price' => '55,00 € *'
+        ];
+
+        $productListPage->loginUser($userData['userLoginName'], $userData['userPassword'])
+            ->seeProductData($productData1, 1);
+
+        $productDetailsPage = $productListPage->openDetailsPage(1)
+            ->seeProductData($productData1)
+            ->seeProductUnitPrice('27,50 €/kg')
+            ->addProductToBasket(5);
+
+        $basketPage = $productDetailsPage->openBasket();
+
+        //amount price discount added to the C price
+        $productData1 = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'amount' => 5,
+            'totalPrice' => '220,00 €'
+        ];
+
+        $basketPage->seeBasketContains([$productData1], '220,00 €');
+        $I->clearShopCache();
+    }
+
+    /**
+     * @group product
+     *
+     * @param AcceptanceTester $I
+     */
+    public function productPriceB(AcceptanceTester $I)
+    {
+        $I->wantToTest('product price B');
+
+        $userData = $this->getExistingUserData();
+
+        $data = [
+            'OXID' => 'obj2group2',
+            'OXOBJECTID' => $userData['userId'],
+            'OXGROUPSID' => 'oxidpriceb',
+        ];
+        $I->haveInDatabase('oxobject2group', $data);
+
+        $productData1 = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'desc' => 'Test product 0 short desc [EN] šÄßüл',
+            'price' => '50,00 € *'
+        ];
+
+        $productListPage = $I->openShop()->openCategoryPage('Test category 0 [EN] šÄßüл');
+        $productListPage->seeProductData($productData1, 1);
+
+        $productData1 = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'desc' => 'Test product 0 short desc [EN] šÄßüл',
+            'price' => '45,00 € *'
+        ];
+
+        $productListPage->loginUser($userData['userLoginName'], $userData['userPassword'])
+            ->seeProductData($productData1, 1);
+
+        $productDetailsPage = $productListPage->openDetailsPage(1)
+            ->seeProductData($productData1)
+            ->seeProductUnitPrice('22,50 €/kg')
+            ->addProductToBasket(2);
+
+        $basketPage = $productDetailsPage->openBasket();
+
+        $productData1 = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'amount' => 2,
+            'totalPrice' => '90,00 €'
+        ];
+
+        $basketPage->seeBasketContains([$productData1], '90,00 €');
+        $I->clearShopCache();
     }
 
     /**
@@ -578,7 +858,8 @@ class ProductDetailsPageCest
         $productData = [
             'id' => 1000,
             'title' => 'Test product 0 [EN] šÄßüл',
-            'amount' => 1
+            'amount' => 1,
+            'totalPrice' => '50,00 €'
         ];
 
         $bundledProductData = [
@@ -591,6 +872,62 @@ class ProductDetailsPageCest
             ->seeBasketContainsBundledProduct($bundledProductData, 2);
 
         $I->updateInDatabase('oxarticles', ["OXBUNDLEID" => ''], ["OXID" => '1000']);
+    }
+
+    /**
+     * @group product
+     *
+     * @param AcceptanceTester  $I
+     * @param ProductNavigation $productNavigation
+     */
+    public function productAmountPrice(AcceptanceTester $I, ProductNavigation $productNavigation)
+    {
+        $I->wantToTest('product amount price');
+
+        $data = [
+            'OXID' => 'price2article1',
+            'OXARTID' => 1000,
+            'OXADDPERC' => 20,
+            'OXAMOUNT' => 4,
+            'OXAMOUNTTO' => 9999999,
+        ];
+        $I->haveInDatabase('oxprice2article', $data);
+
+        $data = [
+            'OXID' => 'price2article2',
+            'OXARTID' => 1000,
+            'OXADDPERC' => 10,
+            'OXAMOUNT' => 2,
+            'OXAMOUNTTO' => 3,
+        ];
+        $I->haveInDatabase('oxprice2article', $data);
+
+        $productData = [
+            'id' => 1000,
+            'title' => 'Test product 0 [EN] šÄßüл',
+            'desc' => 'Test product 0 short desc [EN] šÄßüл',
+            'price' => '50,00 € *'
+        ];
+        $amountPrices = [
+            '2' => '10% '.$I->translate('DISCOUNT'),
+            '4' => '20% '.$I->translate('DISCOUNT')
+        ];
+
+        $productNavigation->openProductDetailsPage($productData['id'])
+            ->seeProductData($productData)
+            ->seeAmountPrices($amountPrices);
+    }
+
+    private function getExistingUserData()
+    {
+        $userLoginData = [
+            "userId" => "testuser",
+            "userLoginName" => "example_test@oxid-esales.dev",
+            "userPassword" => "useruser",
+            "userName" => "UserNamešÄßüл",
+            "userLastName" => "UserSurnamešÄßüл",
+        ];
+        return $userLoginData;
     }
 
 }

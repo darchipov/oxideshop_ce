@@ -3,11 +3,12 @@ namespace Page;
 
 use Page\Footer\NewsletterBox;
 use Page\Header\AccountMenu;
+use Page\Header\Navigation;
 use Page\Header\SearchWidget;
 
 class Home extends Page
 {
-    use AccountMenu, NewsletterBox, SearchWidget;
+    use AccountMenu, NewsletterBox, SearchWidget, Navigation;
 
     // include url of current page
     public static $URL = '/';

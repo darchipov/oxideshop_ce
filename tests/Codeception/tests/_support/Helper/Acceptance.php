@@ -53,4 +53,27 @@ class Acceptance extends \Codeception\Module
         return $sth->execute(array_values($criteria));
     }
 
+    public function updateConfigInDatabase($name, $value, $type='bool')
+    {
+        /** @var \Codeception\Module\Db $dbModule */
+        $dbModule = $this->getModule('Db');
+        $record = $dbModule->grabNumRecords('oxconfig', ['oxvarname' => $name]);
+        $dbh = $dbModule->dbh;
+        if ($record > 0) {
+            $query = "update oxconfig set oxvarvalue=ENCODE( :value, 'fq45QS09_fqyx09239QQ') where oxvarname=:name";
+            $sth = $dbh->prepare($query);
+            $sth->execute(['name' => $name, 'value' => $value]);
+        } else {
+            $query = "insert into oxconfig (oxid, oxshopid, oxvarname, oxvartype, oxvarvalue)
+                       values(:oxid, 1, :name, :type, ENCODE( :value, 'fq45QS09_fqyx09239QQ'))";
+            $sth = $dbh->prepare($query);
+            $sth->execute([
+                'oxid' => md5($name.$type),
+                'name' => $name,
+                'type' => $type,
+                'value' => $value
+            ]);
+        }
+    }
+
 }
