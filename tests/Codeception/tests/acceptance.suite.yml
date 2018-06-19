@@ -26,4 +26,4 @@ modules:
             dump: '%DUMP_PATH%'
             populate: true # run populator before all tests
             cleanup: false # run populator before each test
-            populator: '%VENDOR_PATH%/bin/reset-shop && mysql -u $user -h $host -p$password $dbname < $dump'
+            populator: '%VENDOR_PATH%/bin/reset-shop && mysql -u $user -h $host -p$password --default-character-set=utf8 $dbname < $dump'
