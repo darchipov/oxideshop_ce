@@ -26,6 +26,9 @@ class ModuleInstaller extends \OxidEsales\Eshop\Core\Base
     /** @var \OxidEsales\Eshop\Core\Module\ModuleExtensionsCleaner */
     private $moduleCleaner;
 
+    /** @var \OxidEsales\Eshop\Core\ShopIdCalculator */
+    private $shopIdCalculator;
+
     /**
      * Sets dependencies.
      *
@@ -104,6 +107,10 @@ class ModuleInstaller extends \OxidEsales\Eshop\Core\Base
                 }
             }
 
+            if (version_compare($module->getMetaDataVersion(), '2.1', '>=')) {
+                $this->addSmartyPluginDirectories($module->getSmartyPluginDirectories(), $moduleId);
+            }
+
             $this->resetCache();
 
             $this->_callEvent('onActivate', $moduleId);
@@ -112,6 +119,46 @@ class ModuleInstaller extends \OxidEsales\Eshop\Core\Base
         }
 
         return $result;
+    }
+
+    /**
+     * @param array  $smartyPluginDirectories
+     * @param string $moduleId
+     *
+     */
+    protected function addSmartyPluginDirectories($smartyPluginDirectories, $moduleId)
+    {
+        $smartyPluginDirectoryBridge = $this->getModuleSmartyPluginDirectoryStorage();
+        $smartyPluginDirectoryBridge->add($smartyPluginDirectories, $moduleId);
+    }
+
+    /**
+     * @return \OxidEsales\EshopCommunity\Core\Module\ModuleSmartyPluginDirectoryRepository
+     */
+    private function getModuleSmartyPluginDirectoryStorage()
+    {
+        $module = oxNew(\OxidEsales\Eshop\Core\Module\Module::class);
+        $subShopSpecificCache = new \OxidEsales\Eshop\Core\SubShopSpecificFileCache($this->getShopIdCalculator());
+
+        $moduleVariablesLocator = new \OxidEsales\Eshop\Core\Module\ModuleVariablesLocator($subShopSpecificCache, $this->getShopIdCalculator());
+
+        return new \OxidEsales\EshopCommunity\Core\Module\ModuleSmartyPluginDirectoryRepository(
+            $this->getConfig(),
+            $moduleVariablesLocator,
+            $module
+        );
+    }
+
+    /**
+     * @return \OxidEsales\Eshop\Core\ShopIdCalculator
+     */
+    private function getShopIdCalculator()
+    {
+        if (is_null($this->shopIdCalculator)) {
+            $moduleVariablesCache = new \OxidEsales\Eshop\Core\FileCache();
+            $this->shopIdCalculator = new \OxidEsales\Eshop\Core\ShopIdCalculator($moduleVariablesCache);
+        }
+        return $this->shopIdCalculator;
     }
 
     /**
@@ -136,6 +183,8 @@ class ModuleInstaller extends \OxidEsales\Eshop\Core\Base
             $this->_deleteModuleEvents($moduleId);
             $this->_deleteModuleVersions($moduleId);
             $this->deleteModuleControllers($moduleId);
+            $this->deleteSmartyPluginDirectories($moduleId);
+
 
             $this->resetCache();
 
@@ -143,6 +192,15 @@ class ModuleInstaller extends \OxidEsales\Eshop\Core\Base
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $moduleId
+     */
+    private function deleteSmartyPluginDirectories($moduleId)
+    {
+        $smartyPluginDirectoryBridge = $this->getModuleSmartyPluginDirectoryStorage();
+        $smartyPluginDirectoryBridge->remove($moduleId);
     }
 
     /**

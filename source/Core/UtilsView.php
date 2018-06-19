@@ -46,6 +46,9 @@ class UtilsView extends \OxidEsales\Eshop\Core\Base
      */
     protected $_aActiveModuleInfo = null;
 
+    /** @var \OxidEsales\Eshop\Core\ShopIdCalculator */
+    private $shopIdCalculator;
+
     /**
      * returns existing or creates smarty object
      * Returns smarty object. If object not yet initiated - creates it. Sets such
@@ -356,6 +359,12 @@ class UtilsView extends \OxidEsales\Eshop\Core\Base
         $coreDirectory = $config->getConfigParam('sCoreDir');
         array_unshift($smarty->plugins_dir, $coreDirectory . 'Smarty/Plugin');
 
+
+        $moduleSmartyPluginDirectoryStorage = $this->getSmartyPluginDirectoryRepository();
+        $moduleSmartyPluginDirectories = $moduleSmartyPluginDirectoryStorage->get();
+
+        $smarty->plugins_dir = array_merge($moduleSmartyPluginDirectories, $smarty->plugins_dir);
+
         include_once $coreDirectory . 'Smarty/Plugin/prefilter.oxblock.php';
         $smarty->register_prefilter('smarty_prefilter_oxblock');
 
@@ -387,6 +396,38 @@ class UtilsView extends \OxidEsales\Eshop\Core\Base
             $smarty->security_settings['ALLOW_CONSTANTS'] = true;
             $smarty->secure_dir = $smarty->template_dir;
         }
+    }
+
+    /**
+     * @return \OxidEsales\EshopCommunity\Core\Module\ModuleSmartyPluginDirectoryRepository
+     */
+    private function getSmartyPluginDirectoryRepository()
+    {
+        $subShopSpecificCache = new \OxidEsales\Eshop\Core\SubShopSpecificFileCache($this->getShopIdCalculator());
+        $moduleVariablesLocator = new \OxidEsales\Eshop\Core\Module\ModuleVariablesLocator($subShopSpecificCache, $this->getShopIdCalculator());
+
+        $moduleSmartyDirectoryDao = new \OxidEsales\EshopCommunity\Core\Module\ModuleSmartyPluginDirectoryDao(
+            $this->getConfig(),
+            $moduleVariablesLocator
+        );
+        $module = oxNew(\OxidEsales\Eshop\Core\Module\Module::class);
+
+        return new \OxidEsales\EshopCommunity\Core\Module\ModuleSmartyPluginDirectoryRepository(
+            $moduleSmartyDirectoryDao,
+            $module
+        );
+    }
+
+    /**
+     * @return \OxidEsales\Eshop\Core\ShopIdCalculator
+     */
+    private function getShopIdCalculator()
+    {
+        if (is_null($this->shopIdCalculator)) {
+            $moduleVariablesCache = new \OxidEsales\Eshop\Core\FileCache();
+            $this->shopIdCalculator = new \OxidEsales\Eshop\Core\ShopIdCalculator($moduleVariablesCache);
+        }
+        return $this->shopIdCalculator;
     }
 
     /**
