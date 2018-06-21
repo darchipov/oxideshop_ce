@@ -43,10 +43,10 @@ return [
 
 function getTestSuite()
 {
-    //$testSuitePath = getenv('TEST_SUITE');
-   // if (!$testSuitePath) {
+    $testSuitePath = getenv('TEST_SUITE');
+    if (!$testSuitePath) {
         $testSuitePath = getShopTestPath();
-   // }
+    }
     return $testSuitePath;
 }
 
