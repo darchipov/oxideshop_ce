@@ -1,9 +1,11 @@
 <?php
 namespace Page;
 
+use Page\Header\Navigation;
+
 class UserCheckout extends Page
 {
-    use UserForm;
+    use UserForm, Navigation;
 
     // include url of current page
     public static $URL = '';

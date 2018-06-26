@@ -1,6 +1,9 @@
 <?php
 namespace Page\Header;
 
+use Page\PaymentCheckout;
+use Page\UserCheckout;
+
 trait MiniBasket
 {
     public static $miniBasketMenuElement = '//div[@class="btn-group minibasket-menu"]/button';
@@ -53,5 +56,31 @@ trait MiniBasket
         $I = $this->user;
         $I->click(self::$miniBasketMenuElement);
         return $this;
+    }
+
+    /**
+     * @return UserCheckout
+     */
+    public function openCheckoutForNotLoggedInUser()
+    {
+        /** @var \AcceptanceTester $I */
+        $I = $this->user;
+        $I->click($I->translate('CHECKOUT'));
+        $breadCrumbName = $I->translate("YOU_ARE_HERE") . ':' . $I->translate("ADDRESS");
+        $I->see($breadCrumbName, UserCheckout::$breadCrumb);
+        return new UserCheckout($I);
+    }
+
+    /**
+     * @return PaymentCheckout
+     */
+    public function openCheckoutForLoggedInUser()
+    {
+        /** @var \AcceptanceTester $I */
+        $I = $this->user;
+        $I->click($I->translate('CHECKOUT'));
+        $breadCrumbName = $I->translate("YOU_ARE_HERE") . ':' . $I->translate("PAY");
+        $I->see($breadCrumbName, PaymentCheckout::$breadCrumb);
+        return new PaymentCheckout($I);
     }
 }

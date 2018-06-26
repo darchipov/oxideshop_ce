@@ -1,6 +1,8 @@
 <?php
 namespace Page;
 
+use Page\Header\Navigation;
+
 class PaymentCheckout extends Page
 {
     // include url of current page

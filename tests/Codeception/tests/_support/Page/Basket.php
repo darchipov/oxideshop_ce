@@ -1,8 +1,12 @@
 <?php
 namespace Page;
 
+use Page\Header\MiniBasket;
+
 class Basket extends Page
 {
+    use MiniBasket;
+
     // include url of current page
     public static $URL = '';
 
