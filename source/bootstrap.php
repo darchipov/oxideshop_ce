@@ -211,7 +211,7 @@ function oxTriggerOfflinePageDisplay()
 {
     // Do not display the offline page, if this running in CLI mode
     if ('cli' === strtolower(php_sapi_name())) {
-        echo 'Uncaught exception. See error log for more information.' . PHP_EOL;
+        throw new \Exception('Uncaught exception. See error log for more information.');
     } else {
         header("HTTP/1.1 500 Internal Server Error");
         header("Connection: close");
