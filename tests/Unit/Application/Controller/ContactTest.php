@@ -61,9 +61,6 @@ class ContactTest extends \OxidTestCase
     public function testSave_withoutUserData()
     {
         oxRegistry::getSession()->deleteVariable('Errors');
-
-        $aParams['oxuser__oxusername'] = 'aaaa@aaa.com';
-        $this->setRequestParameter('editval', $aParams);
         $oContact = oxNew('Contact');
 
         $this->assertFalse($oContact->send());
@@ -173,11 +170,20 @@ class ContactTest extends \OxidTestCase
         $this->setRequestParameter("c_subject", "subject");
 
         $oLang = oxRegistry::getLang();
-        $sMessage = $oLang->translateString('MESSAGE_FROM') . " " . $oLang->translateString('MR') . " admin admin(user@oxid-esales.com)<br /><br />message";
+        $sMessage = $oLang->translateString('MESSAGE_FROM') . " " . $oLang->translateString('MR') . " admin admin (user@oxid-esales.com)<br /><br />message";
 
         /** @var oxEmail|PHPUnit_Framework_MockObject_MockObject $oEmail */
         $oEmail = $this->getMock(\OxidEsales\Eshop\Core\Email::class, array("sendContactMail"));
-        $oEmail->expects($this->once())->method('sendContactMail')->with($this->equalTo('user@oxid-esales.com'), $this->equalTo('subject'), $this->equalTo($sMessage))->will($this->returnValue(true));
+        $oEmail
+            ->expects($this->once())
+            ->method('sendContactMail')
+            ->with(
+                $this->equalTo('user@oxid-esales.com'),
+                $this->equalTo('subject'),
+                $this->equalTo($sMessage)
+            )->will(
+                $this->returnValue(true)
+            );
 
         oxTestModules::addModuleObject('oxemail', $oEmail);
 
