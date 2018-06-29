@@ -203,8 +203,7 @@ class ExceptionHandler
         /** Just display a small note in CLI mode */
         $phpSAPIName = strtolower(php_sapi_name());
         if ('cli' === $phpSAPIName) {
-            echo 'Uncaught exception. See error log for more information.' . $loggingErrorMessage;
-            return;
+            throw new \Exception('Uncaught exception. See error log for more information.' . $loggingErrorMessage);
         }
         if (method_exists($exception, 'getString')) {
             $displayMessage = $exception->getString();
