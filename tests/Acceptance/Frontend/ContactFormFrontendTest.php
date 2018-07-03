@@ -46,13 +46,14 @@ class ContactFormFrontendTest extends \OxidEsales\EshopCommunity\Tests\Acceptanc
      */
     public function testContactFormRequiresConfiguredFieldToBeFilled()
     {
+        $this->insertRequiredFirstName();
         $this->openContactForm();
 
         $emailInputField = $this->getElement($this->emailInputFieldXpathLocator);
-        $this->assertTrue($emailInputField->hasAttribute('required'),'The email field is always marked as required');
+        $this->assertTrue($emailInputField->hasAttribute('required'), 'The email field is always marked as required');
 
         $emailLabel = $this->getElement($this->emailLabelXpathLocator);
-        $this->assertTrue($emailLabel->hasClass($this->requiredClass),'The email field is always marked as required');
+        $this->assertTrue($emailLabel->hasClass($this->requiredClass), 'The email field is always marked as required');
 
         $configuredInputField = $this->getElement($this->configuredRequiredInputFieldXpathLocator);
         $this->assertTrue($configuredInputField->hasAttribute('required'), 'The configured field is marked as required after configuration');
@@ -64,5 +65,22 @@ class ContactFormFrontendTest extends \OxidEsales\EshopCommunity\Tests\Acceptanc
     private function openContactForm()
     {
         $this->openNewWindow($this->contactUrl);
+    }
+
+    private function insertRequiredFirstName()
+    {
+        $query = "
+        INSERT INTO `oxconfig`
+        SET
+          `OXID`       = REPLACE( UUID( ) , '-', '' ),
+          `OXSHOPID`   = 1,
+          `OXVARNAME`  = 'contactFormRequiredFields',
+          `OXVARTYPE`  = 'arr',
+          `OXVARVALUE` = 0x4DBA832F74E74DF4CDD5AFCA153F15E216AEA9086F4AD4A5BA4EB0D02C47B1AE3E82287D75
+        ";
+
+        $database = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+        $database->execute($query);
+
     }
 }
