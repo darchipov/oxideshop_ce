@@ -12,7 +12,6 @@ use OxidEsales\Eshop\Core\Config;
 use OxidEsales\Eshop\Core\ConfigFile;
 use OxidEsales\Facts\Facts;
 
-
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
@@ -63,6 +62,5 @@ class Version20180703135728 extends AbstractMigration
     public function down(Schema $schema)
     {
         // this down() migration is auto-generated, please modify it to your needs
-
     }
 }
